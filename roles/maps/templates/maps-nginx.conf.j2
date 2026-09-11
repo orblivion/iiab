@@ -19,5 +19,19 @@ location ~ ^/maps/ {
         gzip_static on;
     }
 
+    # This, combined with making data a symlink back to /, gives the browser a directory listing in json format of /maps/ and all subdirectories
+    location ~ ^/maps/data/ {
+        autoindex on;
+        autoindex_format json;
+
+        # Need to disable /maps/data/index.html to see the directory listing, since /maps/index.html exists
+        index does-not-exist-920f18f8cfc29bcbaa0c8430288fa4a919cd2be30a37dc4369b247193aa0d5ab.html;
+
+        # In case some wise guy tries to visit /maps/data/data/data/data/data/data/data/... and causes a problem.
+        location ~ ^/maps/data/data/ {
+            return 404;
+        }
+    }
+
     root /library/www;
 }
