@@ -9,7 +9,6 @@ sys.path.insert(1, "{{ maps_tools.tile_extract.working_dir }}/pmtiles-python/pyt
 
 CATALOG_URL = "{{ maps_catalog_url }}"
 HOSTING_DIR = Path("{{ maps_serve_path }}")
-EXTRACTS_JSON = HOSTING_DIR / "{{ maps_tools.tile_extract.info_file }}"
 PMTILES = "{{ maps_tools.pmtiles.executable_path }}"
 TMP_DIR = Path("/library/downloads/maps")
 
@@ -469,17 +468,9 @@ def check_for_overlaps(new_fqr):
 
     return True
 
-def update_extracts_json():
-    # region_extracts[extract_name] = {
-    #   "bbox": coordinates,
-    #   "dates": {
-    #     "terrain": terrain_date,
-    #     "vector": vector_date,
-    #     "satellite": satellite_date,
-    #   },
-    # }
+def debug_extracts_json():
     print () # Give space in case this is run after another command
-    print ("Updating extracts.json")
+    print ("Checking FQRs...")
     region_extracts = defaultdict(
         lambda: dict(dates=defaultdict(dict)),
     )
@@ -523,15 +514,12 @@ def update_extracts_json():
             print() # TODO - recommend an "update" instead of delete when we implement that
             print(delete_command(extract_name))
 
-    extracts = {"regions": region_extracts}
-    with EXTRACTS_JSON.open("w") as f:
-        json.dump(extracts, f)
 
 def main():
     match sys.argv[1]:
-        case "update-json":
+        case "debug":
             assert len(sys.argv) == 2, "update-json takes no extra arguments"
-            update_extracts_json()
+            debug_extracts_json()
 
         case "delete":
             assert len(sys.argv) == 3, "delete takes one argument: extract_name"
@@ -539,7 +527,7 @@ def main():
             validate_extract_name(extract_name)
 
             delete_extract(extract_name)
-            update_extracts_json()
+            debug_extracts_json()
 
         case "extract":
             # Get and validate arguments
@@ -582,7 +570,7 @@ def main():
 
             # Do the extracts
             create_extract(new_fqr, extract_name, extract_paths)
-            update_extracts_json() # Add the newly added extract
+            debug_extracts_json()
 
         case unknown:
             raise Exception("Unknown option:", unknown)
